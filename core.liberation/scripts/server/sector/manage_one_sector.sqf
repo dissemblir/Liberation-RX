@@ -15,6 +15,7 @@ private _iedcount = 0;
 private _defensecount = 0;
 private _vehtospawn = [];
 private _vehicle = objNull;
+private _grp = grpNull;
 private _managed_units = [];
 private _squad1 = [];
 private _squad2 = [];
@@ -182,8 +183,8 @@ if ( (!(_sector in blufor_sectors)) && (([_sectorpos, GRLIB_sector_size, GRLIB_s
 	};
 
 	if ( _building_ai_max > 0 ) then {
-		_allbuildings = [nearestObjects [_sectorpos, ["House"], _building_range], {alive _x}] call BIS_fnc_conditionalSelect;
-		_buildingpositions = [];
+		private _allbuildings = (nearestObjects [_sectorpos, ["House"], _building_range]) select {alive _x};
+		private _buildingpositions = [];
 		{
 			_buildingpositions = _buildingpositions + ([_x] call BIS_fnc_buildingPositions);
 		} foreach _allbuildings;
@@ -228,7 +229,7 @@ if ( (!(_sector in blufor_sectors)) && (([_sectorpos, GRLIB_sector_size, GRLIB_s
 		private _nbcivs = round ((6 + (floor random 8)) * GRLIB_civilian_activity);
 		if ( _sector in sectors_bigtown ) then { _nbcivs = _nbcivs + 12 };
 		while { _nbcivs > 0 } do {
-			_maxcivs = 3 min _nbcivs;
+			_maxcivs = (1 + floor random 3) min _nbcivs;
 			_grp = [_sectorpos, _maxcivs] call F_spawnCivilians;
 			[_grp, _sectorpos] spawn add_civ_waypoints;
 			_managed_units = _managed_units + (units _grp);
@@ -263,7 +264,7 @@ if ( (!(_sector in blufor_sectors)) && (([_sectorpos, GRLIB_sector_size, GRLIB_s
 		if (_sector_ownership == GRLIB_side_friendly) then {
 			[_sector] remoteExec ["sector_liberated_remote_call", 2];
 			_stopit = true;
-			_enemy_left = [units GRLIB_side_enemy, {(alive _x) && (vehicle _x == _x) && ((_sectorpos distance2D _x) < _local_capture_size * 1.2)}] call BIS_fnc_conditionalSelect;
+			private _enemy_left = (units GRLIB_side_enemy) select {(alive _x) && (isNull objectParent _x) && ((_x distance2D _sectorpos) < _local_capture_size * 1.2)};
 			{
 				if ( _max_prisonners > 0 && ((floor random 100) < GRLIB_surrender_chance) ) then {
 					[_x] spawn prisoner_ai;
